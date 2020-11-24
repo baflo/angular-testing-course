@@ -5,7 +5,7 @@ import { COURSES, findLessonsForCourse, LESSONS } from "../../../../server/db-da
 import { Course } from "../model/course";
 import { CoursesService } from "./courses.service";
 
-fdescribe("CoursesService", function () {
+describe("CoursesService", function () {
   let coursesService: CoursesService;
   let httpTestingController: HttpTestingController;
 
