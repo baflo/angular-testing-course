@@ -1,4 +1,4 @@
-import { async, ComponentFixture, fakeAsync, flush, flushMicrotasks, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, flush, flushMicrotasks, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { CoursesModule } from '../courses.module';
 import { DebugElement } from '@angular/core';
 
@@ -12,6 +12,7 @@ import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { click } from '../common/test-utils';
+import { fake } from 'cypress/types/sinon';
 
 
 
@@ -95,25 +96,71 @@ describe('HomeComponent', () => {
 
     fixture.detectChanges();
 
-    const [beginnerTab, advancedTab] = el.queryAll(By.css(".mat-tab-label"));
-    click(advancedTab)
+    const tabs = el.queryAll(By.css(".mat-tab-label"));
 
-    fixture.detectChanges();
-
-    const cardTitles = el.queryAll(By.css(".mat-card-title"));
-    expect(cardTitles).toBeTruthy();
-    expect(cardTitles[0].nativeElement.textContent).toContain("Angular Security Course");
+    expect(tabs.length).toBe(2, "Unexpected number of tabs");
   });
 
 
-  it("should display advanced courses when tab clicked", () => {
-
-    coursesService.findAllCourses.and.returnValue(of(advancedCourses));
+  fit("should display advanced courses when tab clicked -- fakeAsync", fakeAsync(() => {
+    // `of` creates an observable that **immediately** emits its value. All of this is done
+    // synchronously, the emission and the completion. This is, this spec can be completely
+    // synchronous!!!
+    coursesService.findAllCourses.and.returnValue(of(setupCourses()));
 
     fixture.detectChanges();
 
-    const tabs = el.queryAll(By.css(".mat-tab-label"));
+    const [beginnerTab, advancedTab] = el.queryAll(By.css(".mat-tab-label"));
+    click(advancedTab);
 
+    fixture.detectChanges();
+    flush();
+
+    const cardTitles = el.queryAll(By.css(".mat-tab-body-active .mat-card-title"));
+    expect(cardTitles).toBeTruthy();
+    expect(cardTitles[0].nativeElement.textContent).toContain("Angular Security Course");
+  }));
+
+  fit("should display advanced courses when tab clicked -- waitForAsync", waitForAsync(() => {
+    // `of` creates an observable that **immediately** emits its value. All of this is done
+    // synchronously, the emission and the completion. This is, this spec can be completely
+    // synchronous!!!
+    coursesService.findAllCourses.and.returnValue(of(setupCourses()));
+
+    fixture.detectChanges();
+
+    const [beginnerTab, advancedTab] = el.queryAll(By.css(".mat-tab-label"));
+    click(advancedTab);
+
+    fixture.detectChanges();
+    fixture.whenStable().then(() => {
+      console.log("called whenStable()");
+
+      const cardTitles = el.queryAll(By.css(".mat-tab-body-active .mat-card-title"));
+      expect(cardTitles).toBeTruthy();
+      expect(cardTitles[0].nativeElement.textContent).toContain("Angular Security Course");
+    });
+  }));
+
+  fit("should display advanced courses when tab clicked -- Typescript async", async () => {
+    // `of` creates an observable that **immediately** emits its value. All of this is done
+    // synchronously, the emission and the completion. This is, this spec can be completely
+    // synchronous!!!
+    coursesService.findAllCourses.and.returnValue(of(setupCourses()));
+
+    fixture.detectChanges();
+
+    const [beginnerTab, advancedTab] = el.queryAll(By.css(".mat-tab-label"));
+    click(advancedTab);
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    console.log("called whenStable()");
+
+    const cardTitles = el.queryAll(By.css(".mat-tab-body-active .mat-card-title"));
+    expect(cardTitles).toBeTruthy();
+    expect(cardTitles[0].nativeElement.textContent).toContain("Angular Security Course");
   });
 
 });
