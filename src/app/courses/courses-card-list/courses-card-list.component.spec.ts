@@ -1,12 +1,10 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { CoursesCardListComponent } from './courses-card-list.component';
-import { CoursesModule } from '../courses.module';
-import { COURSES } from '../../../../server/db-data';
 import { DebugElement } from '@angular/core';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { By } from '@angular/platform-browser';
-import { sortCoursesBySeqNo } from '../home/sort-course-by-seq';
-import { Course } from '../model/course';
+import { of } from 'rxjs';
 import { setupCourses } from '../common/setup-test-data';
+import { CoursesCardListComponent } from './courses-card-list.component';
 
 
 
@@ -16,11 +14,17 @@ describe("CoursesCardListComponent", () => {
   let component: CoursesCardListComponent;
   let fixture: ComponentFixture<CoursesCardListComponent>;
   let el: DebugElement;
+  let matDialog = jasmine.createSpyObj("MatDialog", ["open"]) as SpyObject<MatDialog>;
 
   beforeEach(waitForAsync(function () {
     TestBed.configureTestingModule({
-      imports: [CoursesModule],
-      declarations: []
+      providers: [
+        {
+          provide: MatDialog,
+          useValue: matDialog,
+        }
+      ],
+      declarations: [CoursesCardListComponent]
     }).compileComponents().then(() => {
 
       fixture = TestBed.createComponent(CoursesCardListComponent);
@@ -70,6 +74,32 @@ describe("CoursesCardListComponent", () => {
 
     expect(title.nativeElement.textContent).toBe(course.titles.description);
     expect(image.nativeElement.src).toBe(course.iconUrl);
+  });
+
+  describe("#editCourse", function () {
+
+    it("opens a dialog", () => {
+      // *** This spec does not require `fakeAsync` ***
+      // This spec is completely synchronous, as it mocks the `afterClosed`
+      // method of `DialogRef` and returns a synchronous observable by using `of`.
+
+      matDialog.open.and.returnValue({
+        afterClosed() {
+          return of(component.courses[1]);
+        }
+      } as MatDialogRef<any>);
+
+      component.courses = setupCourses();
+      fixture.detectChanges();
+
+      let eventCalled = false;
+      component.courseEdited.subscribe(() => {
+        eventCalled = true;
+      });
+
+      component.editCourse(component.courses[0]);
+      expect(eventCalled).toBeTrue();
+    });
   });
 });
 

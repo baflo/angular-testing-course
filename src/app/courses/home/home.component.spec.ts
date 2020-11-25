@@ -102,7 +102,7 @@ describe('HomeComponent', () => {
   });
 
 
-  fit("should display advanced courses when tab clicked -- fakeAsync", fakeAsync(() => {
+  it("should display advanced courses when tab clicked -- fakeAsync", fakeAsync(() => {
     // `of` creates an observable that **immediately** emits its value. All of this is done
     // synchronously, the emission and the completion. This is, this spec can be completely
     // synchronous!!!
@@ -121,7 +121,7 @@ describe('HomeComponent', () => {
     expect(cardTitles[0].nativeElement.textContent).toContain("Angular Security Course");
   }));
 
-  fit("should display advanced courses when tab clicked -- waitForAsync", waitForAsync(() => {
+  it("should display advanced courses when tab clicked -- waitForAsync", waitForAsync(() => {
     // `of` creates an observable that **immediately** emits its value. All of this is done
     // synchronously, the emission and the completion. This is, this spec can be completely
     // synchronous!!!
@@ -142,7 +142,7 @@ describe('HomeComponent', () => {
     });
   }));
 
-  fit("should display advanced courses when tab clicked -- Typescript async", async () => {
+  it("should display advanced courses when tab clicked -- Typescript async", async () => {
     // `of` creates an observable that **immediately** emits its value. All of this is done
     // synchronously, the emission and the completion. This is, this spec can be completely
     // synchronous!!!
